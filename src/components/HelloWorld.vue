@@ -18,12 +18,12 @@
                         <div v-for="(rx,rx_key) in repeater.rx" v-bind:key="rx_key">
                             <l-marker
                                     :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
-                                    :icon="icon">
+                                    :icon="rx.name.substr(0,6) === 'Holsen' ? rxidledm0maxicon : rxidleicon">
                                 <l-tooltip>{{repeater.callsign+" - "+rx.name}}</l-tooltip>
                             </l-marker>
                             <l-marker
                                     :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
-                                    v-if="rx.info.sql === 'active'" :icon="receivingicon">
+                                    v-if="rx.info.sql === 'active'" :icon="rx.name.substr(0,6) === 'Holsen' ? rxlisteningdm0maxicon : rxlisteningicon">
                                 <l-tooltip>{{repeater.callsign+" - "+rx.name}}</l-tooltip>
                             </l-marker>
                             <l-circle-marker
@@ -46,7 +46,12 @@
                         <div v-for="(tx,tx_key) in repeater.txlist" v-bind:key="tx_key">
                             <l-marker
                                     :lat-lng="[getAntennaForReceiver(repeater, tx).location.lat, getAntennaForReceiver(repeater, tx).location.lon]"
-                                    v-if="repeater.tx === '1'" :icon="sendingicon">
+                                    :icon="repeater.callsign.substr(0,6) === 'DM0MAX' ? txidledm0maxicon : txidleicon">
+                                <l-tooltip>{{repeater.callsign+" - "+tx_key}}</l-tooltip>
+                            </l-marker>
+                            <l-marker
+                                    :lat-lng="[getAntennaForReceiver(repeater, tx).location.lat, getAntennaForReceiver(repeater, tx).location.lon]"
+                                    v-if="repeater.tx === '1'" :icon="repeater.callsign.substr(0,6) === 'DM0MAX' ? txactivedm0maxicon : txactiveicon">
                                 <l-tooltip>{{repeater.callsign+" - "+tx_key}}</l-tooltip>
                             </l-marker>
                         </div>
@@ -57,15 +62,25 @@
                 <v-container>
                     <v-row>
                         <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" cols="4">
-                            <v-card :color="repeater.tx === '1' ? 'green darken-4' : ''">
+                            <v-card :color="repeater.state === 'DISCONNECTED' ? 'red darken-4' : repeater.tx === '1' ? 'green darken-4' : ''">
                                 <v-card-title>
-                                    <img v-if="repeater.tx === '1'" src="@/assets/icons/sending-green120.gif"
-                                         style="max-height: 120px">
-                                    <img v-else src="@/assets/icons/station-off.png"
-                                         style="max-height: 120px; filter: invert()">
-                                    {{repeater.callsign}}
+                                    <div v-if="repeater.callsign.substr(0,6) === 'DM0MAX'">
+                                        <img v-if="repeater.tx === '1'" src="@/assets/icons/sending-dm0max-green120.gif"
+                                             style="max-height: 120px">
+                                        <img v-else src="@/assets/icons/white-dm0max-000.png"
+                                             style="max-height: 120px">
+                                    </div>
+                                    <div v-else>
+                                        <img v-if="repeater.tx === '1'" src="@/assets/icons/sending-green120.gif"
+                                             style="max-height: 120px">
+                                        <img v-else src="@/assets/icons/station-off.png"
+                                             style="max-height: 120px; filter: invert()">
+                                    </div>
+                                    <h3>{{repeater.callsign}}</h3>
+                                    <h6 v-if="repeater.state !== 'CONNECTED'">{{repeater.state}}</h6>
                                 </v-card-title>
-                                <v-card-text>
+                                    <div style="background-color: rgba(0,0,0,0.2);" class="pa-2">
+                                    <h3 class="text-center mb-2">Empfänger</h3>
                                     <div v-for="(rx, rx_key) in repeater.rx" v-bind:key="rx_key">
                                         <center>{{rx.name}}</center>
                                         <v-progress-linear :value="rx.info.lvl"
@@ -74,7 +89,7 @@
                                         </v-progress-linear>
 
                                     </div>
-                                </v-card-text>
+                                    </div>
                             </v-card>
                         </v-col>
                     </v-row>
@@ -107,8 +122,11 @@
                     const jsonUrl = data[repeaterAttribute].uri.replace("http://do7sk1.ddns.net/", "https://signal.3ef.de/api/");
                     axios.get(jsonUrl).then(r => {
                         let repeater = r.data;
+                        repeater.uri.signalEventStream = this.getProxyURL(repeater.uri.signalEventStream);
+                        repeater.state = "CONNECTING";
                         this.$sse(repeater.uri.signalEventStream, {format: 'json'})
                             .then(sse => {
+                                repeater.state = "CONNECTED";
                                 repeater.sse = sse;
                                 repeater.messages = [];
                                 repeater.tx = "0";
@@ -118,6 +136,7 @@
 
                                 sse.onError(e => {
                                     console.error('lost connection; giving up!', e);
+                                    repeater.state = "DISCONNECTED";
 
                                     // This is purely for example; EventSource will automatically
                                     // attempt to reconnect indefinitely, with no action needed
@@ -162,19 +181,52 @@
             maxZoom: 19,
             icon: icon({
                 iconUrl: require("@/assets/icons/station-off-white.png"),
-                iconSize: [32, 37],
-                iconAnchor: [16, 30]
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
             }),
-            sendingicon: icon({
-                iconUrl: require("@/assets/icons/sending-green120.gif"),
-                iconSize: [32, 37],
-                iconAnchor: [16, 30]
+            rxidleicon: icon({
+                iconUrl: require("@/assets/icons/rx-station-white.png"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
             }),
-            receivingicon: icon({
-                iconUrl: require("@/assets/icons/green-station.png"),
-                iconSize: [32, 37],
-                iconAnchor: [16, 30]
+            rxlisteningicon: icon({
+                iconUrl: require("@/assets/icons/rx-station-green.png"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
             }),
+            txactiveicon: icon({
+                iconUrl: require("@/assets/icons/tx-green120.gif"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
+            }),
+            txidleicon: icon({
+                iconUrl: require("@/assets/icons/tx-station-white.png"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
+            }),
+
+            rxidledm0maxicon: icon({
+                iconUrl: require("@/assets/icons/rx-dm0max-white.png"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
+            }),
+            rxlisteningdm0maxicon: icon({
+                iconUrl: require("@/assets/icons/rx-dm0max-green.png"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
+            }),
+            txactivedm0maxicon: icon({
+                iconUrl: require("@/assets/icons/tx-dm0max-green120.gif"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
+            }),
+            txidledm0maxicon: icon({
+                iconUrl: require("@/assets/icons/tx-dm0max-white.png"),
+                iconSize: [41, 48],
+                iconAnchor: [20, 39]
+            }),
+
+
             staticAnchor: [0, 0],
             customText: "Foobar",
             iconSize: 64
