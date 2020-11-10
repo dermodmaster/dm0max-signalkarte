@@ -5,12 +5,13 @@
                 center-active
                 dark
                 v-model="activeTab"
+                v-if="!$vuetify.breakpoint.mdAndUp"
         >
             <v-tab>Karte</v-tab>
             <v-tab>Details</v-tab>
         </v-tabs>
         <v-row>
-            <v-col v-if="showMap && activeTab === 0" :cols="$vuetify.breakpoint.mdAndUp ? 7 : 12">
+            <v-col v-if="showMap && ($vuetify.breakpoint.mdAndUp || activeTab === 0)" :cols="$vuetify.breakpoint.mdAndUp ? 7 : 12">
                 <l-map
                         :zoom="zoom"
                         :center="center"
@@ -67,7 +68,7 @@
                     </div>
                 </l-map>
             </v-col>
-            <v-col v-if="activeTab === 1">
+            <v-col v-if="$vuetify.breakpoint.mdAndUp || activeTab === 1">
                 <v-container>
                     <v-row>
                         <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 4 : 12">
