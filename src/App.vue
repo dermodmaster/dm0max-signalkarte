@@ -10,8 +10,8 @@
         <p class="font-weight-thin">ALPHA</p>
       </div>
       <v-spacer></v-spacer>
-      <div class="d-flex align-center">
-        <h1 class="title font-weight-thin"><v-icon>mdi-wrench</v-icon> Aktuell unfertig und in Bearbeitung</h1>
+      <div class="d-flex align-center ">
+        <h1 class="title font-weight-thin hidden-md-and-down"><v-icon>mdi-wrench</v-icon> Aktuell unfertig und in Bearbeitung</h1>
       </div>
 
       <v-spacer></v-spacer>

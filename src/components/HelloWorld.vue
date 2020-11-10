@@ -1,7 +1,16 @@
 <template>
     <v-content class="pt-0">
+        <v-tabs
+                background-color="deep-purple accent-4"
+                center-active
+                dark
+                v-model="activeTab"
+        >
+            <v-tab>Karte</v-tab>
+            <v-tab>Details</v-tab>
+        </v-tabs>
         <v-row>
-            <v-col v-if="showMap" cols="7">
+            <v-col v-if="showMap && activeTab === 0" :cols="$vuetify.breakpoint.mdAndUp ? 7 : 12">
                 <l-map
                         :zoom="zoom"
                         :center="center"
@@ -58,10 +67,10 @@
                     </div>
                 </l-map>
             </v-col>
-            <v-col>
+            <v-col v-if="activeTab === 1">
                 <v-container>
                     <v-row>
-                        <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" cols="4">
+                        <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 4 : 12">
                             <v-card :color="repeater.state === 'DISCONNECTED' ? 'red darken-4' : repeater.tx === '1' ? 'green darken-4' : ''">
                                 <v-card-title>
                                     <div v-if="repeater.callsign.substr(0,6) === 'DM0MAX'">
@@ -179,6 +188,7 @@
             repeaters: [],
             fullscreen: false,
             showMap: true,
+            activeTab: 0,
             zoom: 8,
             center: latLng(52.817765, 9.42807),
             url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
