@@ -31,15 +31,15 @@
                                     :radius="rx.info.lvl*1.5"
                                     v-if="rx.info.sql === 'active'"
                                     fill-color="green"
-                                    weight="1"
+                                    :weight="1"
                                     color="green"
                             />
                             <l-circle-marker
                                     :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
                                     :radius="150"
                                     v-if="rx.info.sql === 'active'"
-                                    fill-opacity="0"
-                                    weight="3"
+                                    :fill-opacity="0"
+                                    :weight="3"
                                     color="grey"
                             />
                         </div>
@@ -106,8 +106,13 @@
     export default {
         name: 'Map',
         created() {
+            window.addEventListener("fullscreenchange", () => {
+                this.fullscreen = !this.fullscreen;
+            });
             window.addEventListener("resize", () => {
-                this.showMap = false;
+                setTimeout(() => {
+                    if(!this.fullscreen) this.showMap = false;
+                },200)
                 setTimeout(() => {
                     this.showMap = true;
                 },300)
@@ -172,6 +177,7 @@
 
         data: () => ({
             repeaters: [],
+            fullscreen: false,
             showMap: true,
             zoom: 8,
             center: latLng(52.817765, 9.42807),
