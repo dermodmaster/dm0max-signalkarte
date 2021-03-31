@@ -11,7 +11,7 @@
             <v-tab>Details</v-tab>
         </v-tabs>
         <v-row>
-            <v-col v-if="showMap && ($vuetify.breakpoint.mdAndUp || activeTab === 0)" :cols="$vuetify.breakpoint.mdAndUp ? 7 : 12">
+            <v-col v-if="websocketConnected && showMap && ($vuetify.breakpoint.mdAndUp || activeTab === 0)" :cols="$vuetify.breakpoint.mdAndUp ? 7 : 12">
                 <l-map
                         :zoom="zoom"
                         :center="center"
@@ -68,7 +68,7 @@
                     </div>
                 </l-map>
             </v-col>
-            <v-col v-if="renderComponent && ($vuetify.breakpoint.mdAndUp || activeTab === 1)">
+            <v-col v-if="websocketConnected && ($vuetify.breakpoint.mdAndUp || activeTab === 1)">
                 <v-container>
                     <v-row>
                         <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 3 : 6">
@@ -105,6 +105,7 @@
                     </v-row>
                 </v-container>
             </v-col>
+            <v-col v-if="!websocketConnected" class="text-center"><h1>Keine Verbindung zum Server</h1></v-col>
         </v-row>
     </v-content>
 </template>
@@ -156,73 +157,26 @@
 
                             }
                         }
-                        this.forceRerender()
+                        this.$forceUpdate();
                         break;
                     default:
                         console.error("Unknown message type " + data.type)
                         break;
                 }
+            },
+            this.$options.sockets.onopen = () => {
+                this.websocketConnected = true;
+            },
+            this.$options.sockets.onclose = () => {
+                this.websocketConnected = false;
+            },
+            this.$options.sockets.onerror = () => {
+                this.websocketConnected = false;
             }
-            /*
-            axios.get("https://signal.3ef.de/api/repeaters.json").then(r => {
-                const data = r.data["info"];
-
-                for (let repeaterAttribute in r.data["info"]) {
-                    const jsonUrl = data[repeaterAttribute].uri.replace("http://do7sk1.ddns.net/", "https://signal.3ef.de/api/");
-                    axios.get(jsonUrl).then(r => {
-                        let repeater = r.data;
-                        repeater.uri.signalEventStream = this.getProxyURL(repeater.uri.signalEventStream);
-                        repeater.state = "CONNECTING";
-                        this.$sse(repeater.uri.signalEventStream, {format: 'json'})
-                            .then(sse => {
-                                repeater.state = "CONNECTED";
-                                repeater.sse = sse;
-                                repeater.messages = [];
-                                repeater.tx = "0";
-                                for (let rx in repeater.rx) {
-                                    repeater.rx[rx].info = {"lvl": -1, "sql": "closed"};
-                                }
-
-                                sse.onError(e => {
-                                    console.error('lost connection; giving up!', e);
-                                    repeater.state = "DISCONNECTED";
-
-                                    // This is purely for example; EventSource will automatically
-                                    // attempt to reconnect indefinitely, with no action needed
-                                    // on your part to resubscribe to events once (if) reconnected
-                                    sse.close();
-                                });
-
-                                // Listen for messages without a specified event
-                                sse.subscribe('', (message) => {
-                                    if (message.event === "Logic:transmit") {
-                                        repeater.tx = message.tx;
-                                    } else if (message.event === "Voter:sql_state") {
-                                        for (let att in message.rx) {
-                                            repeater.rx[att].info = message.rx[att];
-                                        }
-                                    }
-                                });
-
-                                this.repeaters.push(repeater);
-                                console.log("Loaded ", repeater);
-                            })
-                            .catch(err => {
-                                // When this error is caught, it means the initial connection to the
-                                // events server failed.  No automatic attempts to reconnect will be made.
-                                console.error('Failed to connect to server', err);
-                            });
-
-
-                    })
-                }
-            })
-            */
         },
 
         data: () => ({
             repeaters: [],
-            renderComponent: true,
             fullscreen: false,
             showMap: true,
             activeTab: 0,
@@ -231,6 +185,7 @@
             url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
+            websocketConnected: false,
             maxZoom: 19,
             icon: icon({
                 iconUrl: require("@/assets/icons/station-off-white.png"),
@@ -294,15 +249,6 @@
                     return repeater.antenna[receiverKey];
                 }
                 return repeater.antenna["HilversumH"];
-            },
-            forceRerender() {
-                // Remove my-component from the DOM
-                this.renderComponent = false;
-
-                this.$nextTick(() => {
-                    // Add the component back in
-                    this.renderComponent = true;
-                });
             },
             getProxyURL(uri) {
                 uri = uri.replace("http://85.222.223.251:5310/", "https://signal.3ef.de/dm0max-5310/");

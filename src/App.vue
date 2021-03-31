@@ -7,7 +7,7 @@
       style="z-index: 10000"
     >
       <div class="d-flex align-center">
-        <h1>DM0MAX - Signal</h1>
+        <h1>Signalanzeige</h1>
         <p class="font-weight-thin">ALPHA</p>
       </div>
       <v-spacer></v-spacer>
@@ -16,7 +16,7 @@
       </div>
 
       <v-spacer></v-spacer>
-      <v-spacer></v-spacer>
+      <h3 class="font-weight-thin">von DO7LK</h3>
 
     </v-app-bar>
 
