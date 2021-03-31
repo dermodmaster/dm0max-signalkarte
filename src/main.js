@@ -6,6 +6,12 @@ import {LMap, LTileLayer, LMarker, LCircleMarker, LTooltip} from 'vue2-leaflet';
 import LControlFullscreen from 'vue2-leaflet-fullscreen';
 import { Icon } from 'leaflet';
 import VueSSE from 'vue-sse';
+import VueNativeSock from 'vue-native-websocket'
+Vue.use(VueNativeSock, 'ws://localhost:8080', {
+  reconnection: true, // (Boolean) whether to reconnect automatically (false)
+  reconnectionAttempts: 5, // (Number) number of reconnection attempts before giving up (Infinity),
+  reconnectionDelay: 3000, // (Number) how long to initially wait before attempting a new (1000)
+})
 
 Vue.config.productionTip = false
 Vue.use(VueSSE);

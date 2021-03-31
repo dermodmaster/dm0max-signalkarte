@@ -68,7 +68,7 @@
                     </div>
                 </l-map>
             </v-col>
-            <v-col v-if="$vuetify.breakpoint.mdAndUp || activeTab === 1">
+            <v-col v-if="renderComponent && ($vuetify.breakpoint.mdAndUp || activeTab === 1)">
                 <v-container>
                     <v-row>
                         <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 4 : 12">
@@ -111,7 +111,6 @@
 
 <script>
     import {latLng, icon} from "leaflet";
-    import axios from 'axios';
 
     export default {
         name: 'Map',
@@ -130,6 +129,41 @@
             })
         },
         mounted() {
+            this.$options.sockets.onmessage = (message) => {
+                const data = JSON.parse(message.data);
+                switch (data.type) {
+                    case 'updateRepeaters':
+                        this.repeaters = data.repeaters
+                        this.repeaters.forEach(repeater => {
+                            repeater.state = "CONNECTED";
+                            for (let rx in repeater.rx) {
+                                repeater.rx[rx].info = {lvl: -1, sql: "closed"};
+                            }
+                        })
+                        break;
+                    case 'repeaterMessage':
+                        // eslint-disable-next-line no-case-declarations
+                        const message = JSON.parse(data.message);
+                        // eslint-disable-next-line no-case-declarations
+                        const index = this.repeaters.findIndex(repeater => repeater.callsign === data.callsign);
+                        if(message.event === "Logic:transmit"){
+                            this.repeaters[index].tx = message.tx;
+                        }else if (message.event === "Voter:sql_state") {
+                            for (let att in message.rx) {
+                                console.log("okay boomer",att, index, this.repeaters[index], message.rx[att])
+                                console.log(this.repeaters[index].rx[att].info)
+                                this.repeaters[index].rx[att].info = message.rx[att];
+
+                            }
+                        }
+                        this.forceRerender()
+                        break;
+                    default:
+                        console.error("Unknown message type " + data.type)
+                        break;
+                }
+            }
+            /*
             axios.get("https://signal.3ef.de/api/repeaters.json").then(r => {
                 const data = r.data["info"];
 
@@ -183,10 +217,12 @@
                     })
                 }
             })
+            */
         },
 
         data: () => ({
             repeaters: [],
+            renderComponent: true,
             fullscreen: false,
             showMap: true,
             activeTab: 0,
@@ -258,6 +294,15 @@
                     return repeater.antenna[receiverKey];
                 }
                 return repeater.antenna["HilversumH"];
+            },
+            forceRerender() {
+                // Remove my-component from the DOM
+                this.renderComponent = false;
+
+                this.$nextTick(() => {
+                    // Add the component back in
+                    this.renderComponent = true;
+                });
             },
             getProxyURL(uri) {
                 uri = uri.replace("http://85.222.223.251:5310/", "https://signal.3ef.de/dm0max-5310/");
