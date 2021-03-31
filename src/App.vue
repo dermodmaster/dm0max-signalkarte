@@ -4,6 +4,7 @@
       app
       color="primary"
       dark
+      style="z-index: 10000"
     >
       <div class="d-flex align-center">
         <h1>DM0MAX - Signal</h1>

@@ -71,7 +71,7 @@
             <v-col v-if="renderComponent && ($vuetify.breakpoint.mdAndUp || activeTab === 1)">
                 <v-container>
                     <v-row>
-                        <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 4 : 12">
+                        <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 3 : 6">
                             <v-card :color="repeater.state === 'DISCONNECTED' ? 'red darken-4' : repeater.tx === '1' ? 'green darken-4' : ''">
                                 <v-card-title>
                                     <div v-if="repeater.callsign.substr(0,6) === 'DM0MAX'">
@@ -86,11 +86,11 @@
                                         <img v-else src="@/assets/icons/station-off.png"
                                              style="max-height: 120px; filter: invert()">
                                     </div>
-                                    <h3>{{repeater.callsign}}</h3>
+                                    <h5>{{repeater.callsign}}</h5>
                                     <h6 v-if="repeater.state !== 'CONNECTED'">{{repeater.state}}</h6>
                                 </v-card-title>
                                     <div style="background-color: rgba(0,0,0,0.2);" class="pa-2">
-                                    <h3 class="text-center mb-2">Empfänger</h3>
+                                    <h4 class="text-center mb-2">Empfänger</h4>
                                     <div v-for="(rx, rx_key) in repeater.rx" v-bind:key="rx_key">
                                         <center>{{rx.name}}</center>
                                         <v-progress-linear :value="rx.info.lvl"
