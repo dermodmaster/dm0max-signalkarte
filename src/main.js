@@ -7,7 +7,8 @@ import LControlFullscreen from 'vue2-leaflet-fullscreen';
 import { Icon } from 'leaflet';
 import VueSSE from 'vue-sse';
 import VueNativeSock from 'vue-native-websocket'
-Vue.use(VueNativeSock, 'ws://localhost:8080', {
+import store from './store'
+Vue.use(VueNativeSock, 'ws://44.149.84.7:8080', {
   reconnection: true, // (Boolean) whether to reconnect automatically (false)
   reconnectionAttempts: 5, // (Number) number of reconnection attempts before giving up (Infinity),
   reconnectionDelay: 3000, // (Number) how long to initially wait before attempting a new (1000)
@@ -32,5 +33,6 @@ Icon.Default.mergeOptions({
 
 new Vue({
   vuetify,
+  store,
   render: h => h(App)
 }).$mount('#app')

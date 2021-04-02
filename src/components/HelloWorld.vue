@@ -71,22 +71,30 @@
             <v-col v-if="websocketConnected && ($vuetify.breakpoint.mdAndUp || activeTab === 1)">
                 <v-container>
                     <v-row>
-                        <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 3 : 6">
+                        <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 4 : 6">
                             <v-card :color="repeater.state === 'DISCONNECTED' ? 'red darken-4' : repeater.tx === '1' ? 'green darken-4' : ''">
                                 <v-card-title>
-                                    <div v-if="repeater.callsign.substr(0,6) === 'DM0MAX'">
-                                        <img v-if="repeater.tx === '1'" src="@/assets/icons/sending-dm0max-green120.gif"
-                                             style="max-height: 120px">
-                                        <img v-else src="@/assets/icons/white-dm0max-000.png"
-                                             style="max-height: 120px">
+                                    <div >
+                                        <div v-if="$store.state.options.showIcon">
+                                            <div v-if="repeater.callsign.substr(0,6) === 'DM0MAX'">
+                                                <img v-if="repeater.tx === '1'" src="@/assets/icons/sending-dm0max-green120.gif"
+                                                     style="max-height: 120px">
+                                                <img v-else src="@/assets/icons/white-dm0max-000.png"
+                                                     style="max-height: 120px">
+                                            </div>
+                                            <div v-else>
+                                                <img v-if="repeater.tx === '1'" src="@/assets/icons/sending-green120.gif"
+                                                     style="max-height: 120px">
+                                                <img v-else src="@/assets/icons/station-off.png"
+                                                     style="max-height: 120px; filter: invert()">
+                                            </div>
+                                        </div>
+                                        <h5>{{repeater.callsign}}</h5>
                                     </div>
-                                    <div v-else>
-                                        <img v-if="repeater.tx === '1'" src="@/assets/icons/sending-green120.gif"
-                                             style="max-height: 120px">
-                                        <img v-else src="@/assets/icons/station-off.png"
-                                             style="max-height: 120px; filter: invert()">
+                                    <div v-if="$store.state.options.showFrequencies">
+                                        <h6>RX: {{(repeater.input_freq/1000000).toFixed(4)}} MHz</h6>
+                                        <h6>TX: {{(repeater.output_freq/1000000).toFixed(4)}} MHz</h6>
                                     </div>
-                                    <h5>{{repeater.callsign}}</h5>
                                     <h6 v-if="repeater.state !== 'CONNECTED'">{{repeater.state}}</h6>
                                 </v-card-title>
                                     <div style="background-color: rgba(0,0,0,0.2);" class="pa-2">
