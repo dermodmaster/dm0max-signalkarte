@@ -276,7 +276,7 @@
                     case "closed":
                         return "grey"
                     case "open":
-                        return "yellow"
+                        return "lime darken-2"
                     case "active":
                         return "red"
                     default:
