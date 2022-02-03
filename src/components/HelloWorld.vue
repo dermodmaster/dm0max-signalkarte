@@ -24,46 +24,50 @@
                     <l-control-fullscreen position="topleft"
                                           :options="{ title: { 'false': 'Fullscreen', 'true': 'Exit' } }"
                     />
-                    <div v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex">
+                    <div v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" >
                         <div v-for="(rx,rx_key) in repeater.rx" v-bind:key="rx_key">
-                            <l-marker
-                                    :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
-                                    :icon="rx.name.substr(0,6) === 'Holsen' ? rxidledm0maxicon : rxidleicon">
-                                <l-tooltip>{{repeater.callsign+" - "+rx.name}}</l-tooltip>
-                            </l-marker>
-                            <l-marker
-                                    :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
-                                    v-if="rx.info.sql === 'active'" :icon="rx.name.substr(0,6) === 'Holsen' ? rxlisteningdm0maxicon : rxlisteningicon">
-                                <l-tooltip>{{repeater.callsign+" - "+rx.name}}</l-tooltip>
-                            </l-marker>
-                            <l-circle-marker
-                                    :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
-                                    :radius="rx.info.lvl*1.5"
-                                    v-if="rx.info.sql === 'active'"
-                                    fill-color="green"
-                                    :weight="1"
-                                    color="green"
-                            />
-                            <l-circle-marker
-                                    :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
-                                    :radius="150"
-                                    v-if="rx.info.sql === 'active'"
-                                    :fill-opacity="0"
-                                    :weight="3"
-                                    color="grey"
-                            />
+                            <div v-if="getAntennaForReceiver(repeater, rx_key) && getAntennaForReceiver(repeater, rx_key).hasOwnProperty('location')">
+                                <l-marker
+                                        :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
+                                        :icon="rx.name.substr(0,6) === 'Holsen' ? rxidledm0maxicon : rxidleicon">
+                                    <l-tooltip>{{repeater.callsign+" - "+rx.name}}</l-tooltip>
+                                </l-marker>
+                                <l-marker
+                                        :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
+                                        v-if="rx.info.sql === 'active'" :icon="rx.name.substr(0,6) === 'Holsen' ? rxlisteningdm0maxicon : rxlisteningicon">
+                                    <l-tooltip>{{repeater.callsign+" - "+rx.name}}</l-tooltip>
+                                </l-marker>
+                                <l-circle-marker
+                                        :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
+                                        :radius="rx.info.lvl*1.5"
+                                        v-if="rx.info.sql === 'active'"
+                                        fill-color="green"
+                                        :weight="1"
+                                        color="green"
+                                />
+                                <l-circle-marker
+                                        :lat-lng="[getAntennaForReceiver(repeater, rx_key).location.lat, getAntennaForReceiver(repeater, rx_key).location.lon]"
+                                        :radius="150"
+                                        v-if="rx.info.sql === 'active'"
+                                        :fill-opacity="0"
+                                        :weight="3"
+                                        color="grey"
+                                />
+                            </div>
                         </div>
                         <div v-for="(tx,tx_key) in repeater.txlist" v-bind:key="tx_key">
-                            <l-marker
-                                    :lat-lng="[getAntennaForReceiver(repeater, tx).location.lat, getAntennaForReceiver(repeater, tx).location.lon]"
-                                    :icon="repeater.callsign.substr(0,6) === 'DM0MAX' ? txidledm0maxicon : txidleicon">
-                                <l-tooltip>{{repeater.callsign+" - "+tx_key}}</l-tooltip>
-                            </l-marker>
-                            <l-marker
-                                    :lat-lng="[getAntennaForReceiver(repeater, tx).location.lat, getAntennaForReceiver(repeater, tx).location.lon]"
-                                    v-if="repeater.tx === '1'" :icon="repeater.callsign.substr(0,6) === 'DM0MAX' ? txactivedm0maxicon : txactiveicon">
-                                <l-tooltip>{{repeater.callsign+" - "+tx_key}}</l-tooltip>
-                            </l-marker>
+                            <div v-if="getAntennaForReceiver(repeater, tx) && getAntennaForReceiver(repeater, tx).hasOwnProperty('location')">
+                                <l-marker
+                                        :lat-lng="[getAntennaForReceiver(repeater, tx).location.lat, getAntennaForReceiver(repeater, tx).location.lon]"
+                                        :icon="repeater.callsign.substr(0,6) === 'DM0MAX' ? txidledm0maxicon : txidleicon">
+                                    <l-tooltip>{{repeater.callsign+" - "+tx_key}}</l-tooltip>
+                                </l-marker>
+                                <l-marker
+                                        :lat-lng="[getAntennaForReceiver(repeater, tx).location.lat, getAntennaForReceiver(repeater, tx).location.lon]"
+                                        v-if="repeater.tx === '1'" :icon="repeater.callsign.substr(0,6) === 'DM0MAX' ? txactivedm0maxicon : txactiveicon">
+                                    <l-tooltip>{{repeater.callsign+" - "+tx_key}}</l-tooltip>
+                                </l-marker>
+                            </div>
                         </div>
                     </div>
                 </l-map>
@@ -72,7 +76,7 @@
                 <v-container>
                     <v-row>
                         <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 4 : 6">
-                            <v-card :color="repeater.state === 'DISCONNECTED' ? 'red darken-4' : repeater.tx === '1' ? 'green darken-4' : ''">
+                            <v-card :color="getRepeaterCardColour(repeater)">
                                 <v-card-title>
                                     <div >
                                         <div v-if="$store.state.options.showIcon">
@@ -95,7 +99,7 @@
                                         <h6>RX: {{(repeater.input_freq/1000000).toFixed(4)}} MHz</h6>
                                         <h6>TX: {{(repeater.output_freq/1000000).toFixed(4)}} MHz</h6>
                                     </div>
-                                    <h6 v-if="repeater.state !== 'CONNECTED'">{{repeater.state}}</h6>
+                                    <h6 v-if="repeater.state === 'DISCONNECTED'">Keine Verbindung zum Repeater</h6>
                                 </v-card-title>
                                     <div style="background-color: rgba(0,0,0,0.2);" class="pa-2">
                                     <h4 class="text-center mb-2">Empfänger</h4>
@@ -140,6 +144,7 @@
         mounted() {
             this.$options.sockets.onmessage = (message) => {
                 const data = JSON.parse(message.data);
+                let index = -1;
                 switch (data.type) {
                     case 'updateRepeaters':
                         this.repeaters = data.repeaters
@@ -150,11 +155,19 @@
                             }
                         })
                         break;
+                    case 'repeaterConnected':
+                        index = this.repeaters.findIndex(repeater => repeater.callsign === data.callsign);
+                        this.repeaters[index].state = "CONNECTED";
+                        break;
+                    case 'repeaterDisconnected':
+                        index = this.repeaters.findIndex(repeater => repeater.callsign === data.callsign);
+                        this.repeaters[index].state = "DISCONNECTED";
+                        break;
                     case 'repeaterMessage':
                         // eslint-disable-next-line no-case-declarations
                         const message = JSON.parse(data.message);
                         // eslint-disable-next-line no-case-declarations
-                        const index = this.repeaters.findIndex(repeater => repeater.callsign === data.callsign);
+                        index = this.repeaters.findIndex(repeater => repeater.callsign === data.callsign);
                         if(message.event === "Logic:transmit"){
                             this.repeaters[index].tx = message.tx;
                         }else if (message.event === "Voter:sql_state") {
@@ -168,7 +181,7 @@
                         this.$forceUpdate();
                         break;
                     default:
-                        console.error("Unknown message type " + data.type)
+                        console.error("Unknown message type: " + data.type)
                         break;
                 }
             },
@@ -257,6 +270,24 @@
                     return repeater.antenna[receiverKey];
                 }
                 return repeater.antenna["HilversumH"];
+            },
+            getRepeaterCardColour(repeater) {
+                if(repeater.state === 'DISCONNECTED')
+                {
+                    return 'red darken-4'
+                }
+                else if(repeater.tx === '1') {
+                    return 'green darken-4'
+                }
+                else {
+                    let squelchOpen = false;
+                    for (let rx in repeater.rx) {
+                        if(repeater.rx[rx].info.sql === "active"){
+                            squelchOpen = true;
+                        }
+                    }
+                    return squelchOpen ? 'grey darken-2' : '';
+                }
             },
             getProxyURL(uri) {
                 uri = uri.replace("http://85.222.223.251:5310/", "https://signal.3ef.de/dm0max-5310/");
