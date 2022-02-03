@@ -76,7 +76,7 @@
                 <v-container>
                     <v-row>
                         <v-col v-for="(repeater, repeaterIndex) in repeaters" v-bind:key="repeaterIndex" :cols="$vuetify.breakpoint.mdAndUp ? 4 : 6">
-                            <v-card :color="getRepeaterCardColour(repeater)">
+                            <v-card :color="getRepeaterCardColor(repeater)">
                                 <v-card-title>
                                     <div >
                                         <div v-if="$store.state.options.showIcon">
@@ -106,7 +106,7 @@
                                     <div v-for="(rx, rx_key) in repeater.rx" v-bind:key="rx_key">
                                         <center>{{rx.name}}</center>
                                         <v-progress-linear :value="rx.info.lvl"
-                                                           :color="rx.info.sql === 'closed' ? 'red' : 'green'"
+                                                           :color="getReceiverProgressBarColor(rx.info.sql)"
                                                            height="20">{{rx.info.lvl}}
                                         </v-progress-linear>
 
@@ -271,7 +271,19 @@
                 }
                 return repeater.antenna["HilversumH"];
             },
-            getRepeaterCardColour(repeater) {
+            getReceiverProgressBarColor(squelchStatus) {
+              switch (squelchStatus) {
+                    case "closed":
+                        return "grey"
+                    case "open":
+                        return "yellow"
+                    case "active":
+                        return "red"
+                    default:
+                        return "grey"
+              }
+            },
+            getRepeaterCardColor(repeater) {
                 if(repeater.state === 'DISCONNECTED')
                 {
                     return 'red darken-4'
